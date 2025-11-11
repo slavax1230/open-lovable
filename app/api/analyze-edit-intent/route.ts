@@ -5,6 +5,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import createOpenRouter from '@/lib/ai/openrouter-client';
 // import type { FileManifest } from '@/types/file-manifest'; // Type is used implicitly through manifest parameter
 
 // Check if we're using Vercel AI Gateway
@@ -30,6 +31,15 @@ const googleGenerativeAI = createGoogleGenerativeAI({
   apiKey: process.env.AI_GATEWAY_API_KEY ?? process.env.GEMINI_API_KEY,
   baseURL: isUsingAIGateway ? aiGatewayBaseURL : undefined,
 });
+
+// OpenRouter provider (if API key is configured)
+let openrouter: any = null;
+if (process.env.OPENROUTER_API_KEY) {
+  openrouter = createOpenRouter({
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: 'https://openrouter.ai/api/v1',
+  });
+}
 
 // Schema for the AI's search plan - not file selection!
 const searchPlanSchema = z.object({
@@ -115,6 +125,14 @@ export async function POST(request: NextRequest) {
       }
     } else if (model.startsWith('google/')) {
       aiModel = googleGenerativeAI(model.replace('google/', ''));
+    } else if (model.startsWith('openrouter/')) {
+      if (!openrouter) {
+        return NextResponse.json({
+          success: false,
+          error: 'OpenRouter API key not configured'
+        }, { status: 400 });
+      }
+      aiModel = openrouter(model.replace('openrouter/', ''));
     } else {
       // Default to groq if model format is unclear
       aiModel = groq(model);
