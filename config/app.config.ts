@@ -71,6 +71,9 @@ export const appConfig = {
       // Popular paid models:
       'openrouter/openai/gpt-4-turbo',
       'openrouter/anthropic/claude-3-opus',
+      
+      // Custom model
+      'openrouter/z-ai/glm-4.6',
     ],
     
     // Model display names
@@ -87,6 +90,7 @@ export const appConfig = {
       'openrouter/cohere/command-r-plus': 'Command R+ (Free)',
       'openrouter/openai/gpt-4-turbo': 'GPT-4 Turbo (OpenRouter)',
       'openrouter/anthropic/claude-3-opus': 'Claude 3 Opus (OpenRouter)',
+      'openrouter/z-ai/glm-4.6': 'GLM-4.6 (Z-AI)',
     } as Record<string, string>,
     
     // Model API configuration
