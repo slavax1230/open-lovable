@@ -7,7 +7,7 @@ export interface SandboxFile {
 export interface SandboxInfo {
   sandboxId: string;
   url: string;
-  provider: 'e2b' | 'vercel';
+  provider: 'e2b' | 'vercel' | 'self-hosted';
   createdAt: Date;
 }
 
@@ -16,6 +16,20 @@ export interface CommandResult {
   stderr: string;
   exitCode: number;
   success: boolean;
+}
+
+export interface SandboxEnvironment {
+  id: string;
+  status: 'ready' | 'busy' | 'error' | 'stopped';
+  config: SandboxConfig;
+  createdAt: Date;
+}
+
+export interface SandboxConfig {
+  timeout?: number;
+  memory?: string;
+  cpu?: string;
+  environment?: Record<string, string>;
 }
 
 export interface SandboxProviderConfig {
@@ -29,6 +43,24 @@ export interface SandboxProviderConfig {
     projectId?: string;
     token?: string;
     authMethod?: 'oidc' | 'pat';
+  };
+  selfHosted?: {
+    docker?: {
+      socketPath?: string;
+      host?: string;
+      port?: number;
+    };
+    resources?: {
+      memory?: number;
+      cpu?: number;
+      timeout?: number;
+    };
+    network?: {
+      mode?: string;
+      allowedPorts?: number[];
+    };
+    volumes?: string[];
+    baseImage?: string;
   };
 }
 

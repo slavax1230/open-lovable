@@ -47,6 +47,65 @@ export const appConfig = {
     // Working directory in sandbox
     workingDirectory: '/home/user/app',
   },
+
+  // Self-Hosted Docker Sandbox Configuration
+  selfHosted: {
+    // Sandbox timeout in minutes
+    timeoutMinutes: 30,
+
+    // Convert to milliseconds
+    get timeoutMs() {
+      return this.timeoutMinutes * 60 * 1000;
+    },
+
+    // Development server port (uses 3000 for React/Vite)
+    devPort: 3000,
+
+    // Time to wait for dev server to be ready (in milliseconds)
+    devServerStartupDelay: 7000,
+
+    // Working directory in container
+    workingDirectory: '/app',
+
+    // Docker configuration
+    docker: {
+      // Docker socket path (default: /var/run/docker.sock)
+      socketPath: process.env.DOCKER_SOCKET_PATH || '/var/run/docker.sock',
+      
+      // Docker host (for TCP connection)
+      host: process.env.DOCKER_HOST,
+      
+      // Docker port (for TCP connection)
+      port: process.env.DOCKER_PORT ? parseInt(process.env.DOCKER_PORT) : undefined,
+    },
+
+    // Resource limits
+    resources: {
+      // Memory limit in bytes (default: 512MB)
+      memory: 512 * 1024 * 1024,
+      
+      // CPU quota (default: 50% - 50000 where 100000 = 100%)
+      cpu: 50000,
+      
+      // Command timeout in milliseconds (default: 30 seconds)
+      timeout: 30000,
+    },
+
+    // Network configuration
+    network: {
+      // Network mode (default: bridge)
+      mode: 'bridge',
+      
+      // Allowed ports for mapping
+      allowedPorts: [3000, 4000, 5000, 8000, 8080],
+    },
+
+    // Base Docker image
+    baseImage: 'node:18-alpine',
+
+    // Volume mounts (host:container)
+    volumes: [] as string[],
+  },
   
   // AI Model Configuration
   ai: {

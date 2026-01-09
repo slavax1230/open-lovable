@@ -1,0 +1,43 @@
+# Self-Hosted Sandbox Base Image
+# Based on Node.js 18 Alpine for smaller size and better performance
+FROM node:18-alpine
+
+# Install necessary system packages
+RUN apk add --no-cache \
+    git \
+    curl \
+    bash \
+    procps \
+    # For Vite HMR and development
+    inotify-tools \
+    # For better terminal support
+    xterm \
+    # For file operations
+    coreutils
+
+# Create app directory
+WORKDIR /app
+
+# Create a non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S sandbox -u 1001
+
+# Change ownership of app directory to sandbox user
+RUN chown -R sandbox:nodejs /app
+
+# Switch to non-root user
+USER sandbox
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV npm_config_prefix=/home/sandbox/.npm-global
+ENV PATH=$npm_config_prefix/bin:$PATH
+
+# Create global npm directory
+RUN mkdir -p $npm_config_prefix
+
+# Expose common development ports
+EXPOSE 3000 4000 5000 8000 8080
+
+# Default command to keep container running
+CMD ["/bin/bash"]
