@@ -144,13 +144,13 @@ class SimpleDockerClient {
 export class SelfHostedProvider extends SandboxProvider {
   private dockerClient: SimpleDockerClient;
   private containerId: string | null = null;
-  private config: SelfHostedConfig;
+  private selfHostedConfig: SelfHostedConfig;
 
   constructor(config: SandboxProviderConfig) {
     super(config);
     
     // Use default config or provided config
-    this.config = {
+    this.selfHostedConfig = {
       timeoutMinutes: 30,
       timeoutMs: 30 * 60 * 1000,
       devPort: 3000,
@@ -174,7 +174,7 @@ export class SelfHostedProvider extends SandboxProvider {
       volumes: [],
     };
 
-    this.dockerClient = new SimpleDockerClient(this.config.docker);
+    this.dockerClient = new SimpleDockerClient(this.selfHostedConfig.docker);
   }
 
   async createSandbox(): Promise<SandboxInfo> {
@@ -189,17 +189,17 @@ export class SelfHostedProvider extends SandboxProvider {
     try {
       // Create container
       const { id: containerId } = await this.dockerClient.createContainer({
-        image: this.config.baseImage,
+        image: this.selfHostedConfig.baseImage,
         name: sandboxId,
         cmd: ['/bin/sh'],
         env: {
           NODE_ENV: 'development',
         },
-        workingDir: this.config.workingDirectory,
+        workingDir: this.selfHostedConfig.workingDirectory,
         hostConfig: {
-          Memory: this.config.resources.memory,
-          CpuQuota: this.config.resources.cpu,
-          NetworkMode: this.config.network.mode,
+          Memory: this.selfHostedConfig.resources.memory,
+          CpuQuota: this.selfHostedConfig.resources.cpu,
+          NetworkMode: this.selfHostedConfig.network.mode,
           AutoRemove: true,
           PortBindings: {
             '3000/tcp': [{ HostPort: '0' }], // Random host port
@@ -233,10 +233,10 @@ export class SelfHostedProvider extends SandboxProvider {
   private async initializeNodeEnvironment(containerId: string): Promise<void> {
     try {
       // Create app directory
-      await this.dockerClient.execCommand(containerId, ['mkdir', '-p', this.config.workingDirectory]);
+      await this.dockerClient.execCommand(containerId, ['mkdir', '-p', this.selfHostedConfig.workingDirectory]);
 
       // Initialize package.json if it doesn't exist
-      const packageJsonExists = await this.dockerClient.execCommand(containerId, ['test', '-f', `${this.config.workingDirectory}/package.json`]);
+      const packageJsonExists = await this.dockerClient.execCommand(containerId, ['test', '-f', `${this.selfHostedConfig.workingDirectory}/package.json`]);
       
       if (!packageJsonExists.success) {
         const defaultPackageJson = {
@@ -252,7 +252,7 @@ export class SelfHostedProvider extends SandboxProvider {
 
         await this.dockerClient.writeFile(
           containerId,
-          `${this.config.workingDirectory}/package.json`,
+          `${this.selfHostedConfig.workingDirectory}/package.json`,
           JSON.stringify(defaultPackageJson, null, 2)
         );
       }
@@ -272,7 +272,7 @@ export class SelfHostedProvider extends SandboxProvider {
       const result = await Promise.race([
         this.dockerClient.execCommand(this.containerId, command.split(' ')),
         new Promise<CommandResult>((_, reject) =>
-          setTimeout(() => reject(new Error('Command timeout')), this.config.resources.timeout)
+          setTimeout(() => reject(new Error('Command timeout')), this.selfHostedConfig.resources.timeout)
         ),
       ]) as CommandResult;
 
@@ -294,7 +294,7 @@ export class SelfHostedProvider extends SandboxProvider {
     }
 
     try {
-      await this.dockerClient.writeFile(this.containerId, `${this.config.workingDirectory}/${path}`, content);
+      await this.dockerClient.writeFile(this.containerId, `${this.selfHostedConfig.workingDirectory}/${path}`, content);
     } catch (error) {
       console.error('Failed to write file:', error);
       throw new Error(`Failed to write file: ${error instanceof Error ? error.message : String(error)}`);
@@ -307,7 +307,7 @@ export class SelfHostedProvider extends SandboxProvider {
     }
 
     try {
-      return await this.dockerClient.readFile(this.containerId, `${this.config.workingDirectory}/${path}`);
+      return await this.dockerClient.readFile(this.containerId, `${this.selfHostedConfig.workingDirectory}/${path}`);
     } catch (error) {
       console.error('Failed to read file:', error);
       throw new Error(`Failed to read file: ${error instanceof Error ? error.message : String(error)}`);
@@ -320,7 +320,7 @@ export class SelfHostedProvider extends SandboxProvider {
     }
 
     try {
-      const fullPath = directory ? `${this.config.workingDirectory}/${directory}` : this.config.workingDirectory;
+      const fullPath = directory ? `${this.selfHostedConfig.workingDirectory}/${directory}` : this.selfHostedConfig.workingDirectory;
       return await this.dockerClient.listFiles(this.containerId, fullPath);
     } catch (error) {
       console.error('Failed to list files:', error);
@@ -427,7 +427,7 @@ export default defineConfig({
       await this.writeFile('vite.config.js', viteConfig);
 
       // Create basic React app structure
-      await this.dockerClient.execCommand(this.containerId, ['mkdir', '-p', `${this.config.workingDirectory}/src`]);
+      await this.dockerClient.execCommand(this.containerId, ['mkdir', '-p', `${this.selfHostedConfig.workingDirectory}/src`]);
 
       // Create main.jsx
       const mainJsx = `
