@@ -51,7 +51,7 @@ export const appConfig = {
   // AI Model Configuration
   ai: {
     // Default AI model
-    defaultModel: 'google/gemini-2.0-flash-exp',
+    defaultModel: 'openrouter/z-ai/glm-4.6',
     
     // Available models - supports Groq, Anthropic, Google, OpenAI, and OpenRouter models
     availableModels: [
