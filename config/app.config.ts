@@ -51,7 +51,7 @@ export const appConfig = {
   // AI Model Configuration
   ai: {
     // Default AI model
-    defaultModel: 'moonshotai/kimi-k2-instruct-0905',
+    defaultModel: 'google/gemini-3-pro-preview',
     
     // Available models - supports Groq, Anthropic, Google, OpenAI, and OpenRouter models
     availableModels: [
@@ -59,21 +59,7 @@ export const appConfig = {
       'openai/gpt-5',
       'moonshotai/kimi-k2-instruct-0905',
       'anthropic/claude-sonnet-4-20250514',
-      'google/gemini-2.0-flash-exp',
-      
-      // OpenRouter models (use 'openrouter/' prefix for dynamic models)
-      // Popular free models from OpenRouter:
-      'openrouter/meta-llama/llama-3.3-70b-instruct',
-      'openrouter/meta-llama/llama-2-70b-chat',
-      'openrouter/mistralai/mistral-large',
-      'openrouter/cohere/command-r-plus',
-      
-      // Popular paid models:
-      'openrouter/openai/gpt-4-turbo',
-      'openrouter/anthropic/claude-3-opus',
-      
-      // Custom model
-      'openrouter/z-ai/glm-4.6',
+      'google/gemini-3-pro-preview'
     ],
     
     // Model display names
@@ -81,16 +67,7 @@ export const appConfig = {
       'openai/gpt-5': 'GPT-5',
       'moonshotai/kimi-k2-instruct-0905': 'Kimi K2 (Groq)',
       'anthropic/claude-sonnet-4-20250514': 'Sonnet 4',
-      'google/gemini-2.0-flash-exp': 'Gemini 2.0 Flash (Experimental)',
-      
-      // OpenRouter models
-      'openrouter/meta-llama/llama-3.3-70b-instruct': 'Llama 3.3 70B (Free)',
-      'openrouter/meta-llama/llama-2-70b-chat': 'Llama 2 70B (Free)',
-      'openrouter/mistralai/mistral-large': 'Mistral Large (Free)',
-      'openrouter/cohere/command-r-plus': 'Command R+ (Free)',
-      'openrouter/openai/gpt-4-turbo': 'GPT-4 Turbo (OpenRouter)',
-      'openrouter/anthropic/claude-3-opus': 'Claude 3 Opus (OpenRouter)',
-      'openrouter/z-ai/glm-4.6': 'GLM-4.6 (Z-AI)',
+      'google/gemini-3-pro-preview': 'Gemini 3 Pro (Preview)'
     } as Record<string, string>,
     
     // Model API configuration
