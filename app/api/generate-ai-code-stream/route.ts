@@ -10,6 +10,7 @@ import { executeSearchPlan, formatSearchResultsForAI, selectTargetFile } from '@
 import { FileManifest } from '@/types/file-manifest';
 import type { ConversationState, ConversationMessage, ConversationEdit } from '@/types/conversation';
 import { appConfig } from '@/config/app.config';
+import createOpenRouter from '@/lib/ai/openrouter-client';
 
 // Force dynamic route to enable streaming
 export const dynamic = 'force-dynamic';
@@ -21,7 +22,8 @@ const aiGatewayBaseURL = 'https://ai-gateway.vercel.sh/v1';
 console.log('[generate-ai-code-stream] AI Gateway config:', {
   isUsingAIGateway,
   hasGroqKey: !!process.env.GROQ_API_KEY,
-  hasAIGatewayKey: !!process.env.AI_GATEWAY_API_KEY
+  hasAIGatewayKey: !!process.env.AI_GATEWAY_API_KEY,
+  hasOpenRouterKey: !!process.env.OPENROUTER_API_KEY
 });
 
 const groq = createGroq({
@@ -43,6 +45,15 @@ const openai = createOpenAI({
   apiKey: process.env.AI_GATEWAY_API_KEY ?? process.env.OPENAI_API_KEY,
   baseURL: isUsingAIGateway ? aiGatewayBaseURL : process.env.OPENAI_BASE_URL,
 });
+
+// OpenRouter provider (if API key is configured)
+let openrouter: any = null;
+if (process.env.OPENROUTER_API_KEY) {
+  openrouter = createOpenRouter({
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: 'https://openrouter.ai/api/v1',
+  });
+}
 
 // Helper function to analyze user preferences from conversation history
 function analyzeUserPreferences(messages: ConversationMessage[]): {
@@ -1216,11 +1227,14 @@ MORPH FAST APPLY MODE (EDIT-ONLY):
         const isAnthropic = model.startsWith('anthropic/');
         const isGoogle = model.startsWith('google/');
         const isOpenAI = model.startsWith('openai/');
+        const isOpenRouter = model.startsWith('openrouter/');
         const isKimiGroq = model === 'moonshotai/kimi-k2-instruct-0905';
+        
         const modelProvider = isAnthropic ? anthropic : 
                               (isOpenAI ? openai : 
                               (isGoogle ? googleGenerativeAI : 
-                              (isKimiGroq ? groq : groq)));
+                              (isOpenRouter && openrouter ? openrouter :
+                              (isKimiGroq ? groq : groq))));
         
         // Fix model name transformation for different providers
         let actualModel: string;
@@ -1228,6 +1242,9 @@ MORPH FAST APPLY MODE (EDIT-ONLY):
           actualModel = model.replace('anthropic/', '');
         } else if (isOpenAI) {
           actualModel = model.replace('openai/', '');
+        } else if (isOpenRouter) {
+          // OpenRouter models - keep the full model ID
+          actualModel = model.replace('openrouter/', '');
         } else if (isKimiGroq) {
           // Kimi on Groq - use full model string
           actualModel = 'moonshotai/kimi-k2-instruct-0905';
@@ -1238,7 +1255,7 @@ MORPH FAST APPLY MODE (EDIT-ONLY):
           actualModel = model;
         }
 
-        console.log(`[generate-ai-code-stream] Using provider: ${isAnthropic ? 'Anthropic' : isGoogle ? 'Google' : isOpenAI ? 'OpenAI' : 'Groq'}, model: ${actualModel}`);
+        console.log(`[generate-ai-code-stream] Using provider: ${isAnthropic ? 'Anthropic' : isGoogle ? 'Google' : isOpenAI ? 'OpenAI' : isOpenRouter ? 'OpenRouter' : 'Groq'}, model: ${actualModel}`);
         console.log(`[generate-ai-code-stream] AI Gateway enabled: ${isUsingAIGateway}`);
         console.log(`[generate-ai-code-stream] Model string: ${model}`);
 
@@ -1731,6 +1748,8 @@ Provide the complete file content without any truncation. Include all necessary 
                   completionClient = openai;
                 } else if (model.includes('claude')) {
                   completionClient = anthropic;
+                } else if (model.includes('openrouter')) {
+                  completionClient = openrouter;
                 } else if (model === 'moonshotai/kimi-k2-instruct-0905') {
                   completionClient = groq;
                 } else {
@@ -1745,6 +1764,8 @@ Provide the complete file content without any truncation. Include all necessary 
                   completionModelName = model.replace('openai/', '');
                 } else if (model.includes('anthropic')) {
                   completionModelName = model.replace('anthropic/', '');
+                } else if (model.includes('openrouter')) {
+                  completionModelName = model.replace('openrouter/', '');
                 } else if (model.includes('google')) {
                   completionModelName = model.replace('google/', '');
                 } else {

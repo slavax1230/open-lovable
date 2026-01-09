@@ -53,8 +53,9 @@ export const appConfig = {
     // Default AI model
     defaultModel: 'google/gemini-3-pro-preview',
     
-    // Available models
+    // Available models - supports Groq, Anthropic, Google, OpenAI, and OpenRouter models
     availableModels: [
+      // Existing providers
       'openai/gpt-5',
       'moonshotai/kimi-k2-instruct-0905',
       'anthropic/claude-sonnet-4-20250514',
