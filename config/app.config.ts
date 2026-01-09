@@ -217,4 +217,4 @@ export function getConfigValue(path: string): any {
   return path.split('.').reduce((obj, key) => obj?.[key], appConfig as any);
 }
 
-export default appConfig;  // API Endpoints Configuration (for external services)
+export default appConfig;
